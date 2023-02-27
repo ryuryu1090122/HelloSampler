@@ -32,7 +32,7 @@ HelloSamplerAudioProcessor::HelloSamplerAudioProcessor()
 
 HelloSamplerAudioProcessor::~HelloSamplerAudioProcessor()
 {
-    mFormatReader = nullptr;
+    
 }
 
 //==============================================================================
@@ -102,6 +102,8 @@ void HelloSamplerAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+
+    mSampler.setCurrentPlaybackSampleRate(sampleRate);
 }
 
 void HelloSamplerAudioProcessor::releaseResources()
@@ -136,10 +138,10 @@ bool HelloSamplerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 }
 #endif
 
-void HelloSamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void HelloSamplerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     // In case we have more outputs than inputs, this code clears any output
@@ -149,20 +151,9 @@ void HelloSamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+        buffer.clear(i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
-    }
+    mSampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
 //==============================================================================
@@ -192,9 +183,32 @@ void HelloSamplerAudioProcessor::setStateInformation (const void* data, int size
 
 void HelloSamplerAudioProcessor::loadfile()
 {
-    
+    myChooser = std::make_unique<juce::FileChooser>("Please load a file", juce::File{}, "*.wav");
 
+    auto ChooserFlags = juce::FileBrowserComponent::openMode
+                            | juce::FileBrowserComponent::canSelectFiles;
 
+    myChooser->launchAsync(ChooserFlags, [this](const juce::FileChooser& chooser)
+        {
+            auto file(chooser.getResult());
+
+            if (file != juce::File{})
+            {
+                auto* reader = mFormatManager.createReaderFor(file);
+
+                if (reader != nullptr)
+                {
+                    auto newSource = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
+                    transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
+                    readerSource.reset(newSource.release());
+                }
+
+                juce::BigInteger range;
+                range.setRange(0, 128, true);
+
+                mSampler.addSound(new juce::SamplerSound("Sample", *reader, range, 72, 0.1, 0.1, 10.0));
+            }
+        });
 }
 
 //==============================================================================

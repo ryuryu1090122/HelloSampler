@@ -2,7 +2,8 @@
 
 <JUCERPROJECT id="tm16Fh" name="HelloSampler" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn">
+              pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
+              pluginManufacturer="Tamaki" pluginName="Sampler" pluginDesc="A simple Sampler">
   <MAINGROUP id="xqjumO" name="HelloSampler">
     <GROUP id="{35A0CB6E-5264-4B1D-A7E7-08D571F1BC7F}" name="Source">
       <FILE id="BJ8Qwa" name="PluginProcessor.cpp" compile="1" resource="0"

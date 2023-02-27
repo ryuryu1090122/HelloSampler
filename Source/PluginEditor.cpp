@@ -11,9 +11,11 @@
 
 //==============================================================================
 HelloSamplerAudioProcessorEditor::HelloSamplerAudioProcessorEditor (HelloSamplerAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+    : AudioProcessorEditor (&p), processor (p)
 {
-    mLoadButton.onClick = [&]();
+    mLoadButton.onClick = [&]() {processor.loadfile(); };
+    addAndMakeVisible(mLoadButton);
+
     setSize (200, 200);
 }
 
@@ -36,4 +38,5 @@ void HelloSamplerAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
+    mLoadButton.setBounds(getWidth()/2-50, getHeight()/2-50, 100, 100);
 }

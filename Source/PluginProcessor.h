@@ -62,8 +62,10 @@ private:
     juce::Synthesiser mSampler;
     const int mNumVoices{ 3 };
 
+    std::unique_ptr<juce::FileChooser> myChooser;
     juce::AudioFormatManager mFormatManager;
-    juce::AudioFormatReader* mFormatReader{ nullptr };
+    std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
+    juce::AudioTransportSource transportSource;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HelloSamplerAudioProcessor)
